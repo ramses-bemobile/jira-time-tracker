@@ -314,13 +314,16 @@ function onDOMContentLoaded() {
             toggleVisibility('div[class="issue-total-time-spent"][data-issue-id=' + issueId + ']');
             toggleVisibility('div[class="loader-mini"][data-issue-id=' + issueId + ']');
             var comment = prompt("Comment");
+			var needRevokeWorkLog = false;
 			if(comment != null){
-				JIRA.updateWorklog(issueId, timeInput.value, new Date(dateInput.value), comment);
+				JIRA.updateWorklog(issueId, timeInput.value, new Date(dateInput.value), comment)
+				.then(function (data) { getWorklog(issueId); }, genericResponseError);
 			}else{
 				alert("time will no be logged");
+				needRevokeWorkLog = true;
 			}
-	
-			getWorklog(issueId);
+			if(needRevokeWorkLog)
+				getWorklog(issueId);
         }
 
         function playButtonClick(evt) {
