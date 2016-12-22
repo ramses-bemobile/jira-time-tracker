@@ -1,30 +1,22 @@
 {
-  "manifest_version": 2,
-
-  "name": "Jira Log Time",
-  "short_name": "Jira Log Time",
-  "description": "Log your daily time in seconds!",
-  "version": "1.1.3",
-
-  "options_ui": {
-    "page": "options.html",
-    "chrome_style": true
-  },
-
-  "browser_action": {
-   "default_icon": "icon.png",
-   "default_popup": "popup.html"
-  },
-
-  "permissions": [
-    "activeTab",
-    "storage",
-    "<all_urls>"
-  ],
-
-  "icons": { 
-    "16": "icon16.png",
-    "48": "icon48.png",
-    "128": "icon128.png"
-  }
+   "browser_action": {
+      "default_icon": "images/icon.png",
+      "default_popup": "popup.html"
+   },
+   "description": "JIRA Time Tracker!",
+   "icons": {
+      "128": "images/icon128.png",
+      "16": "images/icon16.png",
+      "48": "images/icon48.png"
+   },
+   "manifest_version": 2,
+   "name": "JIRA Time Tracker",
+   "options_ui": {
+      "chrome_style": true,
+      "page": "options.html"
+   },
+   "permissions": [ "activeTab", "storage", "\u003Call_urls>" ],
+   "short_name": "JIRA Time Tracker",
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.0.0"
 }

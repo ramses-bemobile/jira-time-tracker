@@ -5,6 +5,7 @@ function JiraAPI (baseUrl, apiExtension, username, password, jql) {
     var apiDefaults = {
         type: 'GET',
         url : baseUrl + apiExtension,
+		
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Basic ' + btoa(username + ':' + password)
@@ -39,7 +40,9 @@ function JiraAPI (baseUrl, apiExtension, username, password, jql) {
         return ajaxWrapper('/issue/' + id);
     }
 
-    function getIssues () {
+    function getIssues (startAt) {
+		if(startAt)
+			jql += "&startAt="+startAt;
         return ajaxWrapper('/search?jql=' + jql);
     }    
 
@@ -47,13 +50,14 @@ function JiraAPI (baseUrl, apiExtension, username, password, jql) {
         return ajaxWrapper('/issue/' + id + '/worklog');
     }
 
-    function updateWorklog (id, timeSpent, date) {
+    function updateWorklog (id, timeSpent, date, comment) {
         var url = '/issue/' + id + '/worklog';
         var options = {
             type: 'POST',
             data: JSON.stringify({
-                "started": date.toISOString().replace('Z', '+0000'), // TODO: Quick fix - Problems with the timezone, investigate
-                "timeSpent": timeSpent
+                "started": date.toISOString().replace('Z', '+0530'), // TODO: Quick fix - Problems with the timezone, investigate
+                "timeSpent": timeSpent,
+                "comment": comment
             })
         }
         return ajaxWrapper(url, options);

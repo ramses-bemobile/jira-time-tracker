@@ -46,7 +46,6 @@
             document.getElementById('baseUrl').value = items.baseUrl;
             document.getElementById('apiExtension').value = items.apiExtension;
             document.getElementById('jql').value = items.jql;
-
         });
     }
     
