@@ -24,6 +24,10 @@ Your Jira username.
 
 Your Jira password.
 
+### Number of items on page
+
+desired number of issues on page displayed at once
+
 ### JQL - Jira Query Language
 
 JQL which will be used to display all items which are available to log time. 
