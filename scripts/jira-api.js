@@ -23,22 +23,20 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
     };
 
     function login() {
-        var url = '/user?username=' + username;
         var options = {
             headers: {
                 'Authorization': 'Basic ' + btoa(username + ':' + password)
             }
         }
-        return ajaxWrapper(url, options);
+        return ajaxWrapper("/", options);
     };
 
     function getIssue(id, success, error) {
         return ajaxWrapper('/issue/' + id, { success: success, error: error });
     }
 
-    function getIssues(startAt, success, error) {
-        if (startAt) jql += "&startAt=" + startAt;
-        return ajaxWrapper('/search?jql=' + jql, { success: success, error: error });
+    function getIssues(startAt, maxResults, success, error) {
+        return ajaxWrapper('/search?jql=' + jql, { success: success, error: error, data: { startAt: startAt, maxResults: maxResults } });
     }
 
     function getIssueWorklog(id, success, error) {

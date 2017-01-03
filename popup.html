@@ -1,46 +1,52 @@
 <!doctype html>
 <html>
-	<head>
-		<title>JIRA Time Tracker</title>
-		<link rel="stylesheet" type="text/css" href="styles\site.css" />
-		<script src="scripts\jquery-3.1.1.js" ></script>
-        <script src="scripts\moment.js"></script>
-		<script src="scripts\jira-api.js"></script>
-		<script src="scripts\popup.js"></script>
-	</head>
-	<body>
-		<h3 id="project-name"></h3>
+<head>
+    <title>JIRA Time Tracker</title>
+    <link rel="stylesheet" type="text/css" href="styles\site.css" />
+    <script src="scripts\jquery-3.1.1.js"></script>
+    <script src="scripts\moment.js"></script>
+    <script src="scripts\jira-api.js"></script>
+    <script src="scripts\popup.js"></script>
+</head>
+<body>
+    <h3 id="project-name"></h3>
 
-		<div id="table-container">
-			<table id="jira-log-time-table">
-				<thead>
-					<tr>
-						<th width="10%">ID</th>
-						<th width="40%">Description</th>
-						<th width="10%">Total</th>
-						<th width="10%">Log time</th>
-						<th width="20%">Date</th>
-						<th width="20%">Status</th>
-						<th width="10%">Action</th>
-					</tr>          
-				</thead>
-				<tbody>
-				</tbody>
-			</table>
-			<div id="loader-container">
-				<div class="loader"></div>
-			</div>
-		</div>
+    <div id="table-container">
+        <table id="jira-log-time-table">
+            <thead>
+                <tr>
+                    <th width="10%">ID</th>
+                    <th width="40%">Description</th>
+                    <th width="10%">Total</th>
+                    <th width="10%">Log time</th>
+                    <th width="20%">Date</th>
+                    <th width="20%">Status</th>
+                    <th width="10%">Action</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="loader-container">
+            <div class="loader"></div>
+        </div>
+    </div>
 
-		<div id="error"></div>
+    <div id="paging" class="paging" style="display:none;">
+        <span id="prev" class="next_prev font16" data-direction="prev" data-page-index="1">&lt;</span>
+        <span id="page_number" class="font16">1</span>
+        <span class="font16">from</span>
+        <span id="total_pages" class="font16">1</span>
+        <span id="next" class="next_prev font16" data-direction="next" data-page-index="1">&gt;</span>
+    </div>
 
-		<div id="brand">
-			<div id="logo">
-			</div>
-			<div id="nav">
-				<a href="options.html" tabindex="1">Options</a> | <a href="http://wandio.com" target="_blank" tabindex="2">About</a>
-			</div>
-		</div>
+    <div id="error"></div>
 
-	</body>
+    <div id="brand">
+        <div id="logo">
+        </div>
+        <div id="nav">
+            <a href="options.html" tabindex="1">Options</a> | <a href="http://wandio.com" target="_blank" tabindex="2">About</a>
+        </div>
+    </div>
+</body>
 </html>

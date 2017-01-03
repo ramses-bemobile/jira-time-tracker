@@ -3,6 +3,9 @@ JIRA Time Tracker
 update v1.0.0: 	added status changing
 		changed to jquery
 
+update v1.0.1:  added paging support with configuration of max items on page
+				configurable from options
+
 purpose: getting pending tasks within project or by user and timetracking
 
 adding extension to chrome:
@@ -34,6 +37,9 @@ Username - your username on jira
 password - your password on jira
 JQL - query for getting tasks
 
+v1.0.1
+number of items on page - number of tasks displayed on page
+
 
 2.1
 JQL (and, or, =, !=)
@@ -46,9 +52,3 @@ status != Done
 
 for current user
 assignee=currentUser()
-
-for pagination
-startAt=(int) ex. startAt=50 //returns issues from this location
-
-for maxResults
-maxResults = (int) returns maxResults number of issues

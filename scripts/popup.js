@@ -1,6 +1,12 @@
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded, false);
 var objectsToLog = {};
+var startAt = 0;
+var totalResult = 0;
+var maxResults = 10;
+var pageIndex = 1;
+var pageCount = 1;
 var JIRA;
+
 Date.prototype.toDateInputValue = (function () {
     var local = new Date(this);
     local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
@@ -15,7 +21,8 @@ function onDOMContentLoaded() {
         description: '',
         baseUrl: '',
         apiExtension: '',
-        jql: ''
+        jql: '',
+        itemsOnPage: 10,
     },
     init);
 }
@@ -34,6 +41,7 @@ function init(options) {
     if (!options.apiExtension) {
         return errorMessage('Missing API extension');
     }
+    maxResults = !options.itemsOnPage ? 10 : options.itemsOnPage;
 
     JIRA = JiraAPI(options.baseUrl, options.apiExtension, options.username, options.password, options.jql);
 
@@ -41,11 +49,31 @@ function init(options) {
 
     $('div[id=loader-container]').toggle();
 
-    JIRA.getIssues(0, onFetchSuccess, onFetchError);
+    $("#paging").on('click', "#next, #prev", function (evt) {
+        var $self = $(this);
+        var direction = $self.data("direction");
+        if (pageIndex == 1 && direction == "prev" || direction == "next" && pageIndex == pageCount) {
+            return false;
+        }
+
+        navigate($self, evt);
+    });
+
+    JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
 }
 
 function onFetchSuccess(response) {
     var issues = response.issues;
+    maxResults = response.maxResults;
+
+    var total = response.total;
+    var remains = total % maxResults;
+    pageCount = (total - remains) / maxResults + 1;
+
+    if (response.total > maxResults) {
+        $("#paging").show();
+        $("#total_pages").text(pageCount);
+    }
 
     drawIssuesTable(issues);
 
@@ -64,6 +92,7 @@ function onFetchError(error) {
 function drawIssuesTable(issues) {
     var $logTable = $('#jira-log-time-table');
     var $tbody = $logTable.children("tbody");
+    $('#jira-log-time-table tbody tr').remove();
     LoadData();
 
     issues.forEach(function (issue) {
@@ -356,4 +385,22 @@ function updateStatus(evt) {
         self.show();
         $div.hide();
     }, genericResponseError);
+}
+
+function navigate(self, evt) {
+    var direction = self.data("direction");
+
+    if (direction == "next") {
+        startAt = startAt + maxResults;
+        JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+        pageIndex++;
+    }
+
+    if (direction == "prev") {
+        startAt = startAt - maxResults;
+        JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+        pageIndex--;
+    }
+
+    $("#page_number").text(pageIndex);
 }
