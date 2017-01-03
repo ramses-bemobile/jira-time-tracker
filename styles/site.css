@@ -257,4 +257,5 @@ span.next_prev {
     span.next_prev:hover {
         background: #1b6fa3;
         text-decoration: none;
+        cursor:pointer;
     }
