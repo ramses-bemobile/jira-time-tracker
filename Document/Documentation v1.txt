@@ -1,5 +1,8 @@
 JIRA Time Tracker
 
+update v1.0.0: 	added status changing
+		changed to jquery
+
 purpose: getting pending tasks within project or by user and timetracking
 
 adding extension to chrome:

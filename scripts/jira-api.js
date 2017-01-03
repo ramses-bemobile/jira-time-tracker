@@ -1,11 +1,9 @@
-function JiraAPI (baseUrl, apiExtension, username, password, jql) {
-
-    var ACTIVE_REQUESTS = 0;
+function JiraAPI(baseUrl, apiExtension, username, password, jql) {
 
     var apiDefaults = {
         type: 'GET',
-        url : baseUrl + apiExtension,
-		
+        url: baseUrl + apiExtension,
+
         headers: {
             'Content-Type': 'application/json',
             'Authorization': 'Basic ' + btoa(username + ':' + password)
@@ -15,165 +13,97 @@ function JiraAPI (baseUrl, apiExtension, username, password, jql) {
     };
 
     return {
-        login : login,
-        getIssue : getIssue,
+        login: login,
+        getIssue: getIssue,
         getIssues: getIssues,
-        getIssueWorklog : getIssueWorklog,
-        updateWorklog : updateWorklog
+        getIssueWorklog: getIssueWorklog,
+        updateWorklog: updateWorklog,
+        updateStatus: updateStatus,
+        changeStatus: changeStatus
     };
-
-
-
-
 
     function login() {
         var url = '/user?username=' + username;
         var options = {
             headers: {
                 'Authorization': 'Basic ' + btoa(username + ':' + password)
-            }            
+            }
         }
         return ajaxWrapper(url, options);
     };
 
-    function getIssue (id) {
-        return ajaxWrapper('/issue/' + id);
+    function getIssue(id, success, error) {
+        return ajaxWrapper('/issue/' + id, { success: success, error: error });
     }
 
-    function getIssues (startAt) {
-		if(startAt)
-			jql += "&startAt="+startAt;
-        return ajaxWrapper('/search?jql=' + jql);
-    }    
-
-    function getIssueWorklog (id) {
-        return ajaxWrapper('/issue/' + id + '/worklog');
+    function getIssues(startAt, success, error) {
+        if (startAt) jql += "&startAt=" + startAt;
+        return ajaxWrapper('/search?jql=' + jql, { success: success, error: error });
     }
 
-    function updateWorklog (id, timeSpent, date, comment) {
+    function getIssueWorklog(id, success, error) {
+        return ajaxWrapper('/issue/' + id + '/worklog', { success: success, error: error });
+    }
+
+    function changeStatus(id, statusid, success, error) {
+        var url = '/issue/' + id + '/transitions';
+        var options = {
+            type: 'POST',
+            data: JSON.stringify({ transition: { id: statusid } }),
+            success: success,
+            error: Error
+        };
+        return ajaxWrapper(url, options);
+    }
+
+    function updateWorklog(id, timeSpent, date, comment, success, error) {
         var url = '/issue/' + id + '/worklog';
         var options = {
             type: 'POST',
             data: JSON.stringify({
-                "started": date.toISOString().replace('Z', '+0530'), // TODO: Quick fix - Problems with the timezone, investigate
+                "started": date.toISOString().replace('Z', '+0530'),
                 "timeSpent": timeSpent,
                 "comment": comment
+            }),
+            success: success,
+            error: error
+        }
+        return ajaxWrapper(url, options);
+    }
+
+    function updateStatus(id, status) {
+        var url = '/issue/' + id + '/status';
+        var options = {
+            type: 'POST',
+            data: JSON.stringify({
+                status: status
             })
         }
         return ajaxWrapper(url, options);
     }
 
-    function ajaxWrapper (urlExtension, optionsOverrides) {
+    function ajaxWrapper(urlExtension, optionsOverrides) {
 
-        // merge default and override options
-        var options = extend(apiDefaults, optionsOverrides || {});
-
-        // concat url
+        var options = $.extend(true, {}, apiDefaults, optionsOverrides || {});
         options.url += urlExtension;
 
-        // return promise
-        return new Promise(function(resolve, reject) {
-
-            var req = new XMLHttpRequest();
-
-            // open request
-            req.open(options.type, options.url, true);
-
-            // set response type (json)
-            req.responseType = options.responseType;
-
-            // on load logic
-            req.onload = function() {
-
-                // consider all statuses between 200 and 400 successful
-                if (req.status >= 200 && req.status < 400) {
-                    resolve(req.response);
-                }
-                // all other ones are considered to be errors
-                else {
-                    //reject(req.response, req.status, req.statusText);
-                    reject({
-                        response: req.response, 
-                        status: req.status, 
-                        statusText: req.statusText
+        $.ajax({
+            url: options.url,
+            type: options.type,
+            headers: options.headers,
+            data: options.data,
+            success: function (data) {
+                if (options.success)
+                    options.success(data);
+            },
+            error: function (xhr) {
+                if (options.error)
+                    options.error({
+                        response: xhr.response,
+                        status: xhr.status,
+                        statusText: xhr.statusText
                     });
-                }
-
-                // keep the count of active XMLHttpRequest objects
-                if (!(--ACTIVE_REQUESTS)) {
-
-                    //if it's 0 dispatch a global event
-                    dispatchEvent('jiraStop', document);
-                }
-
-            };
-
-            // Unpredicted error
-            req.onerror = function() {
-                reject({
-                    response: undefined, 
-                    status: undefined, 
-                    statusText: 'Unknown Error'
-                });
-                dispatchEvent('jiraError', document);
-            };
-
-            // set all headers
-            for(header in options.headers){
-                req.setRequestHeader(header, options.headers[header]);
             }
-
-            // send the request
-            req.send(options.data);
-
-            // increment the count of active XMLHttpRequest objects
-            if (ACTIVE_REQUESTS++ === 0 ) {
-
-                // if it's the first one in the queue, dispatch a global event
-                dispatchEvent('jiraStart', document);
-            }
-
         });
-
     }
-
-
-
-    /*
-        Helper functions
-    */
-    // Event dispatcher
-    function dispatchEvent (name, element) {
-        var event = new Event(name);
-        element.dispatchEvent(event);
-    }
-
-    // Simple extend function
-    function extend (target, overrides) {
-
-        // new empty object
-        var extended = Object.create(target);
-
-        // copy all properties from default
-        Object.keys(target).map(function (prop) {
-            extended[prop] = target[prop];
-        });
-
-        // iterate through overrides
-        Object.keys(overrides).map(function (prop) {
-
-            // if the attribute is an object, extend it too
-            if(typeof overrides[prop] === 'object'){
-                extended[prop] = extend(extended[prop], overrides[prop]);
-            }
-            // otherwise just assign value to the extended object
-            else{
-                extended[prop] = overrides[prop];
-            }
-        });
-
-        return extended;
-
-    };
-
 }

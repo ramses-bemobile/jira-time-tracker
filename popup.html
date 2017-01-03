@@ -3,6 +3,7 @@
 	<head>
 		<title>JIRA Time Tracker</title>
 		<link rel="stylesheet" type="text/css" href="styles\site.css" />
+		<script src="scripts\jquery-3.1.1.js" ></script>
         <script src="scripts\moment.js"></script>
 		<script src="scripts\jira-api.js"></script>
 		<script src="scripts\popup.js"></script>
@@ -19,9 +20,12 @@
 						<th width="10%">Total</th>
 						<th width="10%">Log time</th>
 						<th width="20%">Date</th>
+						<th width="20%">Status</th>
 						<th width="10%">Action</th>
 					</tr>          
 				</thead>
+				<tbody>
+				</tbody>
 			</table>
 			<div id="loader-container">
 				<div class="loader"></div>
