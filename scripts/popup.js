@@ -146,7 +146,7 @@ function sumWorklogs(worklogs) {
 function generateLogTableRow(id, summary) {
     var idCell = buildHTML('td', id, { class: 'issue-id' });
 
-    var summaryCell = buildHTML('td', summary.fields.summary, { class: 'issue-summary truncate' });
+    var summaryCell = buildHTML('td', summary.fields.summary, { class: 'issue-summary truncate', title: summary.fields.summary });
 
     var loader = buildHTML('div', null, { class: 'loader-mini', 'data-loader-issue-id': id });
 
