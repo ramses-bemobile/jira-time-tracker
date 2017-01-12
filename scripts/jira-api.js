@@ -19,7 +19,8 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
         getIssueWorklog: getIssueWorklog,
         updateWorklog: updateWorklog,
         updateStatus: updateStatus,
-        changeStatus: changeStatus
+        changeStatus: changeStatus,
+		setProject : setProject,
     };
 
     function login() {
@@ -104,4 +105,16 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
             }
         });
     }
+	
+	function setProject(projectName){
+		if(jql.match(/(project=)/g)){
+			jql = jql.replace(/(project=\').*(\')/i,'$1'+projectName+'$2');
+		}
+		else{
+			if(jql != "" || jql.length < 3)
+				jql += " and project='"+projectName+"'";
+			else
+				jql += "project='"+projectName+"'";
+		}
+	}
 }

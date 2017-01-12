@@ -7,20 +7,20 @@
 
         var username = document.getElementById('username').value;
         var password = document.getElementById('password').value;
-        var description = document.getElementById('description').value;
         var baseUrl = document.getElementById('baseUrl').value;
         var apiExtension = document.getElementById('apiExtension').value;
         var jql = document.getElementById('jql').value;
         var itemsOnPage = document.getElementById('itemsOnPage').value;
+		var projects = document.getElementById('projects').value;
 
         chrome.storage.sync.set({
             username: username,
             password: password,
-            description: description,
             baseUrl: baseUrl,
             apiExtension: apiExtension,
             jql: jql,
-            itemsOnPage : itemsOnPage
+            itemsOnPage : itemsOnPage,
+			projects : projects
         }, function() {
             var status = document.getElementById('status');
             status.textContent = 'Options saved.';
@@ -36,19 +36,19 @@
         chrome.storage.sync.get({
             username: '',
             password: '',
-            description: '',
             baseUrl: '',
             apiExtension: '/rest/api/2',
             jql: 'assignee=currentUser()',
-            itemsOnPage : 10
+            itemsOnPage : 10,
+			projects : ''
         }, function(items) {
             document.getElementById('username').value = items.username;
             document.getElementById('password').value = items.password;
-            document.getElementById('description').value = items.description;
             document.getElementById('baseUrl').value = items.baseUrl;
             document.getElementById('apiExtension').value = items.apiExtension;
             document.getElementById('jql').value = items.jql;
             document.getElementById('itemsOnPage').value = items.itemsOnPage;
+			document.getElementById('projects').value = items.projects;
         });
     }
     

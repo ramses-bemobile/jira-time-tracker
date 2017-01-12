@@ -2,9 +2,6 @@
 
 ## Options
 
-### Description
-
-Label which will be presented at the top
 
 ### URL 
 
@@ -30,3 +27,10 @@ JQL which will be used to display all items which are available to log time.
 Default option is `assignee=currentUser()`, which will display all issues assigned to you. 
 
 If you are not familiar with JQL, you can go to Jira and adjust all basic filters. Then switch to Advanced mode and just copy generated JQL to this field.
+
+### Project keys Comma separated
+
+Project keys which you want to watch, comma separated values only
+
+ex1: project1
+ex2: project1, project2, ....

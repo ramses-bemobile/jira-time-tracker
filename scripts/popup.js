@@ -6,6 +6,7 @@ var maxResults = 10;
 var pageIndex = 1;
 var pageCount = 1;
 var JIRA;
+var Projects = '';
 
 Date.prototype.toDateInputValue = (function () {
     var local = new Date(this);
@@ -18,11 +19,11 @@ function onDOMContentLoaded() {
     chrome.storage.sync.get({
         username: '',
         password: '',
-        description: '',
         baseUrl: '',
         apiExtension: '',
         jql: '',
         itemsOnPage: 10,
+		projects : ''
     },
     init);
 }
@@ -41,11 +42,11 @@ function init(options) {
     if (!options.apiExtension) {
         return errorMessage('Missing API extension');
     }
+	
     maxResults = !options.itemsOnPage ? 10 : options.itemsOnPage;
 
     JIRA = JiraAPI(options.baseUrl, options.apiExtension, options.username, options.password, options.jql);
-
-    $('#project-name').text(options.description);
+	ShowProjectsDropDown(options.projects);
 
     $('div[id=loader-container]').toggle();
 
@@ -403,4 +404,24 @@ function navigate(self, evt) {
     }
 
     $("#page_number").text(pageIndex);
+}
+
+function ShowProjectsDropDown(projects){
+	var p = projects.split(',');
+	var $projectsSelect = $('#project-names');
+	var first;
+	$(p).each(function(index, itm){
+		if(index==0) first = itm;
+		itm = itm.trim();
+		var opt = buildHTML("option", null, {text:itm, value:itm});
+		opt.appendTo($projectsSelect);
+	});
+	JIRA.setProject(first);
+	$projectsSelect.change(ProjectSelectChange);
+}
+
+function ProjectSelectChange(evt){
+	var pname = $(this).val();
+	JIRA.setProject(pname);
+	JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
 }
