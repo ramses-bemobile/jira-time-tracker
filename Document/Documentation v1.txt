@@ -44,6 +44,9 @@ number of items on page - number of tasks displayed on page
 2.1
 JQL (and, or, =, !=)
 
+for tasks within project
+project in ('Geocell NPS')
+
 for tasks wich is not DONE
 status != Done
 

@@ -18,9 +18,10 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
         getIssues: getIssues,
         getIssueWorklog: getIssueWorklog,
         updateWorklog: updateWorklog,
-        updateStatus: updateStatus,
         changeStatus: changeStatus,
         setProject: setProject,
+        getProjectStatuses: getProjectStatuses,
+        getTransitions : getTransitions
     };
 
     function login() {
@@ -69,17 +70,25 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
         }
         return ajaxWrapper(url, options);
     }
+	
+	function getProjectStatuses(projectName, success, error){
+		var url = "/project/"+projectName+"/statuses";
+		var options = {
+            type: 'GET',
+            success: success,
+            error: error
+		};
+		return ajaxWrapper(url, options);
+	}
 
-    function updateStatus(id, status) {
-        var url = '/issue/' + id + '/status';
-        var options = {
-            type: 'POST',
-            data: JSON.stringify({
-                status: status
-            })
-        }
-        return ajaxWrapper(url, options);
-    }
+	function getTransitions(issueid, success, error) {
+	    var url = "/issue/" + issueid + "/transitions";
+	    var options = {
+	        success: success,
+	        error: Error
+	    };
+	    return ajaxWrapper(url, options);
+	}
 
     function ajaxWrapper(urlExtension, optionsOverrides) {
 

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded, false);
 var objectsToLog = {};
+var projectStatuses = [];
 var startAt = 0;
 var totalResult = 0;
 var maxResults = 10;
@@ -23,7 +24,7 @@ function onDOMContentLoaded() {
         apiExtension: '',
         jql: '',
         itemsOnPage: 10,
-		projects : ''
+        projects: ''
     },
     init);
 }
@@ -42,11 +43,12 @@ function init(options) {
     if (!options.apiExtension) {
         return errorMessage('Missing API extension');
     }
-	
+
     maxResults = !options.itemsOnPage ? 10 : options.itemsOnPage;
 
     JIRA = JiraAPI(options.baseUrl, options.apiExtension, options.username, options.password, options.jql);
-	ShowProjectsDropDown(options.projects);
+    ShowProjectsDropDown(options.projects);
+
 
     $('div[id=loader-container]').toggle();
 
@@ -60,7 +62,8 @@ function init(options) {
         navigate($self, evt);
     });
 
-    JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+    //get project statuses and after that load issues
+    JIRA.getProjectStatuses($('#project-names').val(), ProjectStatuesSuccess, genericResponseError);
 }
 
 function onFetchSuccess(response) {
@@ -77,6 +80,9 @@ function onFetchSuccess(response) {
     }
 
     drawIssuesTable(issues);
+    if (issues.length > 0) {
+        JIRA.getTransitions(issues[0].key, onGetTransitionsSuccess, genericResponseError);
+    }
 
     $('div[id=loader-container]').hide();
 
@@ -345,14 +351,15 @@ function buildButton(type, id) {
 
 function GetStatusesDropDown(attr) {
     var $select = buildHTML("select", null, attr);
-    var $option_todo = buildHTML("option", null, { text: "To Do", value: "To Do", selected: "selected", "data-transition-id": 11 });
-    var $option_inprogress = buildHTML("option", null, { text: "In Progress", value: "In Progress", "data-transition-id": 21 });
-    var $option_done = buildHTML("option", null, { text: "Done", value: "Done", "data-transition-id": 31 });
-    var $option_pending = buildHTML("option", null, { text: "Pending", value: "Pending", "data-transition-id": 41 });
-    $option_todo.appendTo($select);
-    $option_inprogress.appendTo($select);
-    $option_done.appendTo($select);
-    $option_pending.appendTo($select);
+
+    for (var i in projectStatuses) {
+        var itm = projectStatuses[i];
+        var $option = buildHTML("option", null, { text: itm.text, value: itm.text, "data-transition-id": itm.id });
+        $option.appendTo($select);
+    }
+
+    $($select.children()[0]).attr("selected", "selected");
+
     return $select;
 }
 
@@ -406,22 +413,57 @@ function navigate(self, evt) {
     $("#page_number").text(pageIndex);
 }
 
-function ShowProjectsDropDown(projects){
-	var p = projects.split(',');
-	var $projectsSelect = $('#project-names');
-	var first;
-	$(p).each(function(index, itm){
-		if(index==0) first = itm;
-		itm = itm.trim();
-		var opt = buildHTML("option", null, {text:itm, value:itm});
-		opt.appendTo($projectsSelect);
-	});
-	JIRA.setProject(first);
-	$projectsSelect.change(ProjectSelectChange);
+function ShowProjectsDropDown(projects) {
+    var p = projects.split(',');
+    var $projectsSelect = $('#project-names');
+    var first;
+    $(p).each(function (index, itm) {
+        if (index == 0) first = itm;
+        itm = itm.trim();
+        var opt = buildHTML("option", null, { text: itm, value: itm });
+        opt.appendTo($projectsSelect);
+    });
+    JIRA.setProject(first);
+    $projectsSelect.change(ProjectSelectChange);
 }
 
-function ProjectSelectChange(evt){
-	var pname = $(this).val();
-	JIRA.setProject(pname);
-	JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+function ProjectSelectChange(evt) {
+    var pname = $(this).val();
+    JIRA.setProject(pname);
+
+    JIRA.getProjectStatuses(pname, ProjectStatuesSuccess, genericResponseError);
+
+    JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+}
+
+function ProjectStatuesSuccess(data) {
+    projectStatuses = [];
+    if ($.type(data) === "array" && data.length > 0) {
+        var statuses = $.grep(data, function (e) { return e.name == "Task"; })[0].statuses;
+        for (var i in statuses) {
+            var status = statuses[i];
+            projectStatuses.push({ id: status.id, text: status.name });
+        }
+    }
+    else {
+        projectStatuses = [
+            { id: 11, text: "To Do" },
+            { id: 21, text: "In Progress" },
+            { id: 31, text: "Done" }
+        ];
+    }
+
+    JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+}
+
+function onGetTransitionsSuccess(data) {
+    projectStatuses = [];
+    if (data != null) {
+        var trans = data.transitions;
+        for (var i in trans) {
+            var itm = trans[i];
+            $("select option[value='" + itm.name + "'").attr("data-transition-id", itm.id);
+            projectStatuses.push({ id: itm.id, text: itm.name });
+        }
+    }
 }
