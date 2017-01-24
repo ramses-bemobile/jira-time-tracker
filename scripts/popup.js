@@ -433,7 +433,7 @@ function ProjectSelectChange(evt) {
 
     JIRA.getProjectStatuses(pname, ProjectStatuesSuccess, genericResponseError);
 
-    JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
+    //JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
 }
 
 function ProjectStatuesSuccess(data) {
