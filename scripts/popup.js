@@ -24,7 +24,8 @@ function onDOMContentLoaded() {
         apiExtension: '',
         jql: '',
         itemsOnPage: 10,
-        projects: ''
+        projects: '',
+        project: ''
     },
     init);
 }
@@ -47,8 +48,8 @@ function init(options) {
     maxResults = !options.itemsOnPage ? 10 : options.itemsOnPage;
 
     JIRA = JiraAPI(options.baseUrl, options.apiExtension, options.username, options.password, options.jql);
-    ShowProjectsDropDown(options.projects);
 
+    ShowProjectsDropDown(options.projects, options.project);
 
     $('div[id=loader-container]').toggle();
 
@@ -76,9 +77,12 @@ function onFetchSuccess(response) {
 
     if (response.total > maxResults) {
         $("#paging").show();
-        $("#total_pages").text(pageCount);
+    }
+    else {
+        $("#paging").hide();
     }
 
+    $("#total_pages").text(pageCount);
     drawIssuesTable(issues);
     if (issues.length > 0) {
         JIRA.getTransitions(issues[0].key, onGetTransitionsSuccess, genericResponseError);
@@ -101,6 +105,7 @@ function drawIssuesTable(issues) {
     var $tbody = $logTable.children("tbody");
     $('#jira-log-time-table tbody tr').remove();
     LoadData();
+    updateIcon();
 
     issues.forEach(function (issue) {
         var row = generateLogTableRow(issue.key, issue);
@@ -187,7 +192,7 @@ function generateLogTableRow(id, summary) {
     var logButton = buildButton("save", id);
 
     if (objectsToLog && !objectsToLog[id])
-        objectsToLog[id] = { timerid: "" };
+        objectsToLog[id] = {};
 
     actionCell = buildHTML('td');
     if (objectsToLog && objectsToLog[id] && !objectsToLog[id]["StartDate"]) {
@@ -252,6 +257,8 @@ function playButtonClick(evt) {
         evt.target.remove();
         stopButton.insertBefore(parent.childNodes[0]);
     }
+
+    updateIcon();
 }
 
 function stopButtonClick(evt) {
@@ -276,6 +283,8 @@ function stopButtonClick(evt) {
     evt.target.remove();
     var playButton = buildButton("play", issueId);
     playButton.insertBefore(parent.childNodes[0]);
+
+    updateIcon();
 }
 
 function buildHTML(tag, html, attrs) {
@@ -413,7 +422,7 @@ function navigate(self, evt) {
     $("#page_number").text(pageIndex);
 }
 
-function ShowProjectsDropDown(projects) {
+function ShowProjectsDropDown(projects, selectedProject) {
     var p = projects.split(',');
     var $projectsSelect = $('#project-names');
     var first;
@@ -423,17 +432,29 @@ function ShowProjectsDropDown(projects) {
         var opt = buildHTML("option", null, { text: itm, value: itm });
         opt.appendTo($projectsSelect);
     });
-    JIRA.setProject(first);
+
+    var val = "";
+    if (selectedProject != null && selectedProject != "") {
+        val = selectedProject;
+    }
+    else {
+        val = first;
+    }
+
+    JIRA.setProject(val);
+    $projectsSelect.val(val);
     $projectsSelect.change(ProjectSelectChange);
 }
 
 function ProjectSelectChange(evt) {
     var pname = $(this).val();
+
+    chrome.storage.sync.set({
+        project: pname
+    });
+
     JIRA.setProject(pname);
-
     JIRA.getProjectStatuses(pname, ProjectStatuesSuccess, genericResponseError);
-
-    //JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
 }
 
 function ProjectStatuesSuccess(data) {
@@ -466,4 +487,19 @@ function onGetTransitionsSuccess(data) {
             projectStatuses.push({ id: itm.id, text: itm.name });
         }
     }
+}
+
+function updateIcon() {
+    if (AnyTimerStarted())
+        chrome.browserAction.setIcon({ path: "images/icon_run.png" });
+    else
+        chrome.browserAction.setIcon({ path: "images/icon.png" });
+}
+
+function AnyTimerStarted() {
+    for (var key in objectsToLog) {
+        if (objectsToLog[key] && objectsToLog[key].StartDate)
+            return true;
+    }
+    return false;
 }
