@@ -21,7 +21,7 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
         changeStatus: changeStatus,
         setProject: setProject,
         getProjectStatuses: getProjectStatuses,
-        getTransitions : getTransitions
+        getTransitions: getTransitions
     };
 
     function login() {
@@ -61,7 +61,7 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
         var options = {
             type: 'POST',
             data: JSON.stringify({
-                "started": date.toISOString().replace('Z', '+0530'),
+                "started": moment(date).format('YYYY-MM-DDT' + moment().format('HH:mm:ss.SSS') + 'ZZ'),
                 "timeSpent": timeSpent,
                 "comment": comment
             }),
@@ -70,25 +70,25 @@ function JiraAPI(baseUrl, apiExtension, username, password, jql) {
         }
         return ajaxWrapper(url, options);
     }
-	
-	function getProjectStatuses(projectName, success, error){
-		var url = "/project/"+projectName+"/statuses";
-		var options = {
+
+    function getProjectStatuses(projectName, success, error) {
+        var url = "/project/" + projectName + "/statuses";
+        var options = {
             type: 'GET',
             success: success,
             error: error
-		};
-		return ajaxWrapper(url, options);
-	}
+        };
+        return ajaxWrapper(url, options);
+    }
 
-	function getTransitions(issueid, success, error) {
-	    var url = "/issue/" + issueid + "/transitions";
-	    var options = {
-	        success: success,
-	        error: Error
-	    };
-	    return ajaxWrapper(url, options);
-	}
+    function getTransitions(issueid, success, error) {
+        var url = "/issue/" + issueid + "/transitions";
+        var options = {
+            success: success,
+            error: Error
+        };
+        return ajaxWrapper(url, options);
+    }
 
     function ajaxWrapper(urlExtension, optionsOverrides) {
 
