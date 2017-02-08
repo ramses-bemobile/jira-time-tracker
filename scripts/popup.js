@@ -156,7 +156,9 @@ function sumWorklogs(worklogs) {
 }
 
 function generateLogTableRow(id, summary) {
-    var idCell = buildHTML('td', id, { class: 'issue-id' });
+	var icon = buildHTML("img", null, {src:summary.fields.issuetype.iconUrl});
+	
+    var idCell = buildHTML('td', icon[0].outerHTML + id, { class: 'issue-id' });
 
     var summaryCell = buildHTML('td', summary.fields.summary, { class: 'issue-summary truncate', title: summary.fields.summary });
 
@@ -289,7 +291,8 @@ function stopButtonClick(evt) {
 
 function buildHTML(tag, html, attrs) {
     var $element = $("<" + tag + ">");
-    if (html) $element.html(html);
+    if (html) 
+		$element.html(html);
 
     for (attr in attrs) {
         if (attrs[attr] === false) continue;
