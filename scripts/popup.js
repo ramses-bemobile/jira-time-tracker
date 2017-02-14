@@ -156,7 +156,7 @@ function sumWorklogs(worklogs) {
 }
 
 function generateLogTableRow(id, summary) {
-	var icon = buildHTML("img", null, {src:summary.fields.issuetype.iconUrl});
+	var icon = buildHTML("img", null, {src:summary.fields.issuetype.iconUrl, style:"vertical-align:bottom"});
 	
     var idCell = buildHTML('td', icon[0].outerHTML + id, { class: 'issue-id' });
 
