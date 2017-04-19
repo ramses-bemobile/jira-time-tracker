@@ -38,7 +38,7 @@
             password: '',
             baseUrl: '',
             apiExtension: '/rest/api/2',
-            jql: 'assignee=currentUser()',
+            jql: 'assignee=currentUser() AND (status = "To Do" OR status = "In Progress")',
             itemsOnPage : 10,
 			projects : ''
         }, function(items) {
