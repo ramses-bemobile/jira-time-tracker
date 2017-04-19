@@ -6,19 +6,19 @@
     "default_icon": "images/icon.png",
     "default_popup": "popup.html"
   },
-  "description": "Bemobole Jira Time Tracker",
+  "description": "Bemobile Jira Time Tracker",
   "icons": {
     "128": "images/icon128.png",
     "16": "images/icon16.png",
     "48": "images/icon48.png"
   },
   "manifest_version": 2,
-  "name": "Bemobole Jira Time Tracker",
+  "name": "Bemobile Jira Time Tracker",
   "options_ui": {
     "chrome_style": true,
     "page": "options.html"
   },
   "permissions": [ "activeTab", "storage", "\u003Call_urls>" ],
-  "short_name": "Bemobole Jira Time Tracker",
-  "version": "0.0.1"
+  "short_name": "Bemobile Jira Time Tracker",
+  "version": "0.0.2"
 }
