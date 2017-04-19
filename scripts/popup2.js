@@ -9,8 +9,6 @@ var pageCount = 1;
 var JIRA;
 var Projects = '';
 
-var baseUrl = '';
-
 Date.prototype.toDateInputValue = (function () {
     var local = new Date(this);
     local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
@@ -67,8 +65,6 @@ function init(options) {
 
     //get project statuses and after that load issues
     JIRA.getProjectStatuses($('#project-names').val(), ProjectStatuesSuccess, genericResponseError);
-
-    baseUrl = options.baseUrl;
 }
 
 function onFetchSuccess(response) {
@@ -162,9 +158,9 @@ function sumWorklogs(worklogs) {
 function generateLogTableRow(id, summary) {
 	var icon = buildHTML("img", null, {src:summary.fields.issuetype.iconUrl, style:"vertical-align:bottom"});
 	
-    var idCell = buildHTML('td', icon[0].outerHTML + id, { class: 'issue-id', 'data-id-issue-id': id });
+    var idCell = buildHTML('td', icon[0].outerHTML + id, { class: 'issue-id' });
 
-    var summaryCell = buildHTML('td', summary.fields.summary, { class: 'issue-summary truncate', title: summary.fields.summary, 'data-summary-issue-id': id });
+    var summaryCell = buildHTML('td', summary.fields.summary, { class: 'issue-summary truncate', title: summary.fields.summary });
 
     var loader = buildHTML('div', null, { class: 'loader-mini', 'data-loader-issue-id': id });
 
@@ -175,42 +171,131 @@ function generateLogTableRow(id, summary) {
     totalTimeContainer.append(loader);
     totalTimeContainer.append(totalTime);
 
-
-    // SECCION PARA GUARDAR HIDDEN EN LA TABLA 
-    var hiddenStatus = buildHTML('input', null, { type: 'hidden', id: 'hidden-status-' + id, 'value': summary.fields.status.name });
-    idCell.append(hiddenStatus);
-    GetStatusesDropDown({ id: "hidden-select-status-" + id, style: "display: none;" }).appendTo(idCell);
+    var timeInput = buildHTML('input', null, { class: 'issue-time-input', 'data-time-issue-id': id });
 
 
+    var timeInputCell = buildHTML('td');
+    timeInputCell.append(timeInput);
+
+    var dateInput = buildHTML('input', null, { type: 'date', class: 'issue-log-date-input', value: new Date().toDateInputValue(), 'data-date-issue-id': id });
+
+    var dateInputCell = buildHTML('td');
+    dateInputCell.append(dateInput);
+
+    statusCell = buildHTML('td');
+    var statusLoaderDiv = buildHTML('div', null, { class: 'loader-mini', 'data-status-loader-issue-id': id }).appendTo(statusCell);
+    statusLoaderDiv.hide();
+    $select = GetStatusesDropDown({ "data-issue-id": id }).appendTo(statusCell);
+    $select.val(summary.fields.status.name);
+    $select.on('change', updateStatus);
+
+    var playButton = buildButton("play", id);
+    var stopButton = buildButton("stop", id);
+    var logButton = buildButton("save", id);
 
     if (objectsToLog && !objectsToLog[id])
         objectsToLog[id] = {};
 
-    var statusCell = buildHTML('td');
-    statusCell.append(summary.fields.status.name);
-
-    var row = buildHTML('tr', null, { 'data-row-issue-id': id, 'data-issue-id': id});
-    row.on('click', selectIssueClickRow);
-
-
-    if (objectsToLog[id] && objectsToLog[id].StartDate) {
-        row.addClass("issueActiveRow");
+    actionCell = buildHTML('td');
+    if (objectsToLog && objectsToLog[id] && !objectsToLog[id]["StartDate"]) {
+        actionCell.append(playButton);
+    }
+    if (objectsToLog && objectsToLog[id] && objectsToLog[id]["StartDate"]) {
+        actionCell.append(stopButton);
     }
 
+    actionCell.append(logButton);
+
+    var row = buildHTML('tr', null, { 'data-row-issue-id': id });
 
     row.append(idCell);
     row.append(summaryCell);
     row.append(totalTimeContainer);
+    row.append(timeInputCell);
+    row.append(dateInputCell);
     row.append(statusCell);
+    row.append(actionCell);
     return row;
 }
 
+function logTimeClick(evt) {
+
+    errorMessage('');
+
+    var issueId = $(evt.target).data('issue-id');
+    var timeInput = $('input.issue-time-input[data-time-issue-id=' + issueId + ']');
+    var dateInput = $('input.issue-log-date-input[data-date-issue-id=' + issueId + ']');
+
+    if (!timeInput.val().match(/[0-9]{1,4}[wdhm]/g)) {
+        errorMessage('Time input in wrong format. You can specify a time unit after a time value "X", such as Xw, Xd, Xh or Xm, to represent weeks (w), days (d), hours (h) and minutes (m), respectively.');
+        return;
+    }
+
+    $('div.issue-total-time-spent[data-total-issue-id=' + issueId + ']').toggle();
+    $('div.loader-mini[data-loader-issue-id=' + issueId + ']').toggle();
+    
+    //var comment = prompt("Comment");
+    
 
 
+    var comment = $('#input-comment').val();
+     $('#input-comment').val("");
+    if (comment != null && comment != "") {
+        JIRA.updateWorklog(issueId, timeInput.val(), new Date(dateInput.val()), comment,
+		function (data) {
+		    getWorklog(issueId);
+		}, genericResponseError);
+    } else {
+        //alert("time will not be logged. Check comment");
+        
+        errorMessage("time will not be logged. Check comment")
+        getWorklog(issueId);
+    }
+}
 
+function playButtonClick(evt) {
+    var issueId = $(evt.target).data('issue-id');
+    var timeInput = $('input[data-time-issue-id=' + issueId + ']');
 
+    if (objectsToLog[issueId] && !objectsToLog[issueId].StartDate) {
+        objectsToLog[issueId].StartDate = moment().format("YYYY-MM-DD HH:mm:ss");
 
+        SaveData();
 
+        var stopButton = buildButton("stop", issueId);
+        var parent = evt.target.parentElement;
+        evt.target.remove();
+        stopButton.insertBefore(parent.childNodes[0]);
+    }
+
+    updateIcon();
+}
+
+function stopButtonClick(evt) {
+    var issueId = $(evt.target).data('issue-id');
+    var $timeInput = $('input[data-time-issue-id=' + issueId + ']');
+    if (objectsToLog[issueId] && objectsToLog[issueId].StartDate) {
+        var startDate = moment(objectsToLog[issueId].StartDate);
+        var current = moment();
+        var totalMinutes = current.diff(startDate, "minutes");
+
+        var minutes = totalMinutes % 60;
+        var hours = totalMinutes > minutes ? (totalMinutes - minutes) / 60 : 0;
+
+        var text = (hours == 0 ? "" : hours + "h") + " " + minutes + "m";
+        $timeInput.val(text);
+
+        delete objectsToLog[issueId]["StartDate"];
+        SaveData();
+    }
+
+    var parent = evt.target.parentElement;
+    evt.target.remove();
+    var playButton = buildButton("play", issueId);
+    playButton.insertBefore(parent.childNodes[0]);
+
+    updateIcon();
+}
 
 function buildHTML(tag, html, attrs) {
     var $element = $("<" + tag + ">");
@@ -240,6 +325,49 @@ function LoadData() {
     objectsToLog = localStorage.objectsToLog ? JSON.parse(localStorage.objectsToLog) : {};
 }
 
+function buildButton(type, id) {
+    var $button;
+    if (type == "play") {
+        $button = buildHTML("img", null, {
+            src: "images/play.png",
+            width: "16",
+            height: "16",
+            style: "width:16px; height:16px",
+            "data-issue-id": id
+        });
+        $button.on('click', playButtonClick);
+    }
+    if (type == "stop") {
+        $button = buildHTML("img", null, {
+            src: "images/stop.png",
+            width: "16",
+            height: "16",
+            style: "width:16px; height:16px",
+            "data-issue-id": id
+        });
+        $button.on('click', stopButtonClick);
+    }
+    if (type == "pause") {
+        $button = buildHTML("img", null, {
+            src: "images/pause.png",
+            width: "16",
+            height: "16",
+            style: "width:16px; height:16px",
+            "data-issue-id": id
+        });
+    }
+    if (type == "save") {
+        $button = buildHTML("img", null, {
+            src: "images/save.png",
+            width: "16",
+            height: "16",
+            style: "width:16px; height:16px",
+            "data-issue-id": id
+        });
+        $button.on('click', logTimeClick);
+    }
+    return $button;
+}
 
 function GetStatusesDropDown(attr) {
     var $select = buildHTML("select", null, attr);
@@ -271,8 +399,21 @@ function genericResponseError(error) {
     }
 }
 
+function updateStatus(evt) {
+    var self = $(this);
+    var id = $(this).data("issue-id");
+    var statusId = $(this).find(":selected").data("transition-id");
+    var value = $(this).val();
 
+    var $div = $("div.loader-mini[data-status-loader-issue-id=" + id);
+    $div.show();
+    $(this).hide();
 
+    JIRA.changeStatus(id, statusId, function (data) {
+        self.show();
+        $div.hide();
+    }, genericResponseError);
+}
 
 function navigate(self, evt) {
     var direction = self.data("direction");
@@ -344,8 +485,6 @@ function ProjectStatuesSuccess(data) {
         ];
     }
 
-    statusesInfoReady();
-
     JIRA.getIssues(startAt, maxResults, onFetchSuccess, onFetchError);
 }
 
@@ -375,311 +514,3 @@ function AnyTimerStarted() {
     }
     return false;
 }
-
-
-
-
-
-
-
-/* * * * * * * * * * * * * * * * * * * * * 
-
-Events Methods
-
-* * * * * * * * * * * * * * * * * * * * */
-
-
-function selectIssueClickRow(evt){
-
-    var issueId = $(this).data('issue-id');
-    selectIssueWithId(issueId);
-
-    $(".issueSelected").removeClass("issueSelected");
-    $(this).addClass("issueSelected");
-}
-
-
-function selectIssueWithId(issueId) {
-
-    $("#issue_fields").show();
-
-    errorMessage('');
-
-    var summaryText = $('td[data-summary-issue-id=' + issueId + ']').html();
-    var issueStatus = $('#hidden-status-' + issueId ).val();
-
-    $('#issue_id').text(issueId);
-    $('#issue_title').text(summaryText);
-
-
-    // Borramos el html del select y el loader 
-    $("#issue-status-div").html("");
-
-    $('#input-time').val("");
-    $('#input-comment').val("");
-
-
-    // Agregamos el select haciedno un clon del de la tabla que est hidde
-    var selectStatus = $( "#hidden-select-status-" + issueId ).clone();
-    $("#issue-status-div").append(selectStatus);
-    selectStatus.show();
-    selectStatus.val(issueStatus);
-    selectStatus.on('change', genericUpdateStatus);
-
-    // Agregamos el loader 
-
-    var statusLoaderDiv = buildHTML('div', null, { class: 'loader-mini', id: 'loader-mini' });
-    statusLoaderDiv.hide();
-    $("#issue-status-div").append(statusLoaderDiv);
-
-
-    var newUrl = baseUrl = options.baseUrl + '/' + $('#project-names').val() + "/issues/" + issueId;
-
-    $("#issue_jira_url").attr('href', newUrl);
-
-
-    if (objectsToLog[issueId] && objectsToLog[issueId].StartDate) {
-        $("#input-play-stop").attr('src', 'images/stop.png'); 
-
-        timerFrom("real-timer", objectsToLog[issueId].StartDate);
-
-    }else{
-        stopTimer();
-
-        $("#input-play-stop").attr('src', 'images/play.png'); 
-    }
-
-    $('#input-save-loader').hide();
-
-    $("#input-date").val(new Date().toDateInputValue());
-
-}
-
-
-function genericUpdateStatus(evt) {
-
-    var self = $(this);
-    var $div = $("#loader-mini");
-    $div.show();
-    $(this).hide();
-
-    var id = $('#issue_id').text();
-    var statusId = $(this).find(":selected").data("transition-id");
-
-    JIRA.changeStatus(id, statusId, function (data) {
-        self.show();
-        $div.hide();
-    }, genericResponseError); 
-
-}
-
-function genericPlayStop(evt){
-
-
-    var $playStopButton = $("#input-play-stop");
-    var action = $playStopButton.attr('src');
-
-    var id = $('#issue_id').text();
-
-    if (action.includes("play")){
-
-        if (AnyTimerStarted()){
-            errorMessage('Issue ejecutandose. Poner el id del issue aqui.');
-        }else{
-            $playStopButton.attr('src', 'images/stop.png'); 
-            genericPlayButtonClick(id); 
-
-            $('tr[data-row-issue-id=' + id + ']').addClass("issueActiveRow");
-        }
-
-
-    }else{
-        $playStopButton.attr('src', 'images/play.png'); 
-
-        genericStopButtonClick(id);
-
-        $('tr[data-row-issue-id=' + id + ']').removeClass("issueActiveRow");
-
-    }
-
-}
-
-
-function genericPlayButtonClick(issueId) {
-    
-    if (objectsToLog[issueId] && !objectsToLog[issueId].StartDate) {
-        objectsToLog[issueId].StartDate = moment().format("YYYY-MM-DD HH:mm:ss");
-
-        timerFrom("real-timer", objectsToLog[issueId].StartDate);
-        SaveData();
-    }
-
-    updateIcon();
-}
-
-function genericStopButtonClick(issueId) {
-
-    var $timeInput = $('#input-time');
-    
-    if (objectsToLog[issueId] && objectsToLog[issueId].StartDate) {
-
-
-        stopTimer();
-        
-        
-        var startDate = moment(objectsToLog[issueId].StartDate);
-        var current = moment();
-        var totalMinutes = current.diff(startDate, "minutes");
-
-        var minutes = totalMinutes % 60;
-        var hours = totalMinutes > minutes ? (totalMinutes - minutes) / 60 : 0;
-
-        var text = (hours == 0 ? "" : hours + "h") + " " + minutes + "m";
-        $timeInput.val(text);
-
-        delete objectsToLog[issueId]["StartDate"];
-        SaveData();
-    }
-
-    updateIcon();
-}
-
-
-
-function genericLogTimeClick(evt) {
-
-    errorMessage('');
-
-    var issueId = $('#issue_id').text();
-    var timeInput = $('#input-time');
-    var dateInput = $('#input-date');
-
-    if (!timeInput.val().match(/[0-9]{1,4}[wdhm]/g)) {
-        errorMessage('Time input in wrong format. You can specify a time unit after a time value "X", such as Xw, Xd, Xh or Xm, to represent weeks (w), days (d), hours (h) and minutes (m), respectively.');
-        return;
-    }
-
-    var comment = $('#input-comment').val();
-    if (comment != null && comment != "") {
-
-        $('#input-save-loader').toggle();
-        $('#input-save-log').toggle();
-
-
-        JIRA.updateWorklog(issueId, timeInput.val(), new Date(dateInput.val()), comment,
-        function (data) {
-            getWorklog(issueId);
-
-            $('#input-comment').val("");
-            $('#input-time').val("");
-
-            $('#input-save-loader').toggle();
-            $('#input-save-log').toggle();
-
-        }, genericResponseError);
-    } else {
-        //alert("time will not be logged. Check comment");
-        
-        errorMessage("time will not be logged. Check comment")
-        getWorklog(issueId);
-    }
-}
-
-
-
-
-
-/* * * * * * * * * * * * * * * * * * * * * 
-
-Logic Methods 
-
-* * * * * * * * * * * * * * * * * * * * */
-
-function statusesInfoReady(){
-    $("#input-play-stop").on('click', genericPlayStop);
-    $("#input-save-log").on('click', genericLogTimeClick);
-}
-
-
-
-function infoReadyMethod(){
-
-}
-
-
-/* * * * * * * * * * * * * * * * * * * * * 
-
-Connection Methods
-
-* * * * * * * * * * * * * * * * * * * * */
-
-
-
-/* * * * * * * * * * * * * * * * * * * * * 
-
-Helpers 
-
-* * * * * * * * * * * * * * * * * * * * */
-
-var x;
-
-function stopTimer(){
-    clearInterval(x);
-    $("#real-timer").text("");
-}
-
-function timerFrom(elementId, stringDate){
-
-    // Set the date we're counting down to
-//var countDownDate = new Date(stringDate).getTime();
-
-var countStartDate = new Date(stringDate).getTime();
-
-
-// Update the count down every 1 second
-x = setInterval(function() {
-
-  // Get todays date and time
-  var now = new Date().getTime();
-
-  // Find the distance between now an the count down date
-  //var distance = countDownDate + now;
-
-  var distance = now - countStartDate;
-
-  // Time calculations for days, hours, minutes and seconds
-  var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-  // Display the result in the element with id="demo"
-  document.getElementById(elementId).innerHTML = days + "d " + hours + "h "
-  + minutes + "m " + seconds + "s ";
-
-  // If the count down is finished, write some text 
-  if (distance < 0) {
-    clearInterval(x);
-    document.getElementById(elementId).innerHTML = "EXPIRED";
-  }
-}, 1000);
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

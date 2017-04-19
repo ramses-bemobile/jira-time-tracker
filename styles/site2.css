@@ -1,121 +1,9 @@
 body {
     margin: 0;
-    width: 800px;
-    height: 600px;
 }
-
-header{
-
-    width: 100%;
-}
-
-footer{
-    height: 38px;
-}
-
-
-
-
-/* Headers Styles */
-
-
-#row-1{
-    height: 30px;
-    padding: 5px;
-}
-
-#row-1 label{
-    font-size: 20px;
-}
-
-#row-1 #options-space{
-    width: 200px;
-    float: right;
-    text-align: right;
-    margin-top: 6px;
-    height: 20px;
-}
-
-#row-1 #project-space{
-    display: inline-block;
-    text-align: right;
-}
-
-#row-issue-selected{
-    border-top: 1px solid black;
-    height: 115px;
-
-}
-
-#row-issue-selected #issue_section_title{
-    font-size: 16px;
-}
-#row-issue-selected #issue_id{
-    font-size: 16px;
-}
-
-#row-issue-selected #issue_description{
-    width: 48%;
-    float: left;
-    padding: 1%;
-}
-
-#row-issue-selected #issue_title{
-    font-size: 12px;
-}
-
-#row-issue-selected #issue_fields{
-    width: 388px;
-    float: left;
-    padding-top: 8px;
-    padding-right: 4px;
-    padding-bottom: 8px;
-    padding-left: 7px;
-}
-
-
-#input-comment {
-    margin-right: 10px;
-    margin-bottom: 10px;
-    width: 260px;
-}
-
-#input-date{
-    margin-right: 15px;
-    width: 120px;
-}
-
-#input-time{
-    margin-right: 15px;
-    width: 50px;
-}
-
-#issue-status-div{
-    width: 100px;
-    display: inline-block;
-}
-
-.issueActiveRow{
-    background-color: rgba(27, 251, 0, 0.33);
-}
-
-
-.issueSelected{
-    background-color: rgba(128, 128, 128, 0.24);
-}
-
-
-
-
-
-
-
-
-
 
 div#table-container {
-    /*min-height: 450px;*/
-    min-height: 400px;
+    min-height: 450px;
 }
 
 a {
@@ -132,9 +20,6 @@ a {
     padding: 10px;
     color: red;
     font-weight: bold;
-
-    width: 50%;
-    float: left;
 }
 
 #loader-container {
@@ -148,7 +33,11 @@ a {
     margin: 10px;
 }
 
-
+#input-comment {
+    margin-right: 20px;
+    width: 200px;
+    float: right;
+}
 
 #jira-log-time-table {
     width: 770px;
@@ -217,13 +106,10 @@ input {
 }
 
 #brand {
-    height: 5px;
+    height: 50px;
     background: #f3f3f3;
     margin: 0;
     border-top: 1px solid #e5e5e5;
-
-    width: 100%;
-    float: left;
 }
 
 #logo {
@@ -357,9 +243,6 @@ div.paging {
     margin-right: 0px;
     margin-left: auto;
     width: 150px;
-
-    float: right;
-    padding: 7px;
 }
 
 span.font16 {

@@ -9,22 +9,91 @@
     <script src="scripts\popup.js"></script>
 </head>
 <body>
-    <span id="project-name">Project:</span>
-	<select id="project-names">
-	</select>
-	<br />
-	<br />
+
+<div id="test" style=" background-color: red; position: absolute; top: 0; left: 0; width: 0px; height: 0px;"></div>
+
+    <header>
+        
+        <div id="row-1">
+
+            <label id="title-test">BEMOBILE JIRA TRACKER</label>
+
+            
+
+            <div id="options-space">
+
+                <a href="options.html" tabindex="1">Options</a> |
+                <a href="https://github.com/lmaraneli/jira-time-tracker" target="_blank" tabindex="2">About</a>
+
+            </div>
+
+            <div id="project-space">
+                
+                <span id="project-name">| Project:</span>
+                <select id="project-names">
+                </select>
+
+            </div> 
+
+        </div>
+
+        <div id="row-issue-selected">
+        
+            <div id="issue_description">
+
+                <label id="issue_section_title">Issue Seleccionado: </label>
+                <label id="issue_id"></label>
+                <a href="" target="_blank" tabindex="2" id="issue_jira_url">Ir a Jira</a>
+                <br><br>
+                <label id="issue_title"></label>
+
+            </div>
+            
+            <!-- Poner los campos -->
+
+            <div id="issue_fields" style="display: none;">
+
+                <label>Datos nuevos: </label>
+                
+                <br>
+
+                <input type="text" placeholder="comment" id="input-comment">
+
+
+                <!-- Poner esto en un div aparte para uqe se entienda que es otra accion  -->
+                <div id="issue-status-div">
+                    <select id="project-status-generic"></select>
+                </div>
+
+                <input type="text" placeholder="tiempo" id="input-time">
+                <input type="date" placeholder="fecha" id="input-date" class="issue-log-date-input">
+
+                <label id="real-timer"></label>
+
+                <img src="images/play.png" style="width:16px; height:16px" id="input-play-stop" >
+
+                <div style=" display: inline-block; width: 25px; height: 20px; ">
+                    <img src="images/save.png" style="width:16px; height:16px" id="input-save-log" >
+                    <div id="input-save-loader" class="loader-mini" style="display: none;"></div>
+                </div>
+            </div>
+
+            
+
+        </div>
+
+
+    </header>
+    
+
     <div id="table-container">
         <table id="jira-log-time-table">
             <thead>
                 <tr>
-                    <th width="10%">ID</th>
-                    <th width="23%">Description</th>
+                    <th width="15%">ID</th>
+                    <th width="60%">Description</th>
                     <th width="10%">Total</th>
-                    <th width="10%">Log time</th>
-                    <th width="18%">Date</th>
-                    <th width="20%" style="overflow:hidden;">Status</th>
-                    <th width="10%">Action</th>
+                    <th width="15%">Status</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -34,22 +103,24 @@
         </div>
     </div>
 
-    <div id="paging" class="paging" style="display:none;">
-        <span id="prev" class="next_prev font16" data-direction="prev" data-page-index="1">&lt;</span>
-        <span id="page_number" class="font16">1</span>
-        <span class="font16">from</span>
-        <span id="total_pages" class="font16">1</span>
-        <span id="next" class="next_prev font16" data-direction="next" data-page-index="1">&gt;</span>
-    </div>
+    <footer>
 
-    <div id="error"></div>
+        <div id="paging" class="paging" style="display:none;">
+            <span id="prev" class="next_prev font16" data-direction="prev" data-page-index="1">&lt;</span>
+            <span id="page_number" class="font16">1</span>
+            <span class="font16">from</span>
+            <span id="total_pages" class="font16">1</span>
+            <span id="next" class="next_prev font16" data-direction="next" data-page-index="1">&gt;</span>
+        </div>
 
-    <div id="brand">
-        <div id="logo">
+        <div id="error"></div>
+
+        <div id="brand">
         </div>
-        <div id="nav">
-            <a href="options.html" tabindex="1">Options</a> | <a href="https://github.com/lmaraneli/jira-time-tracker" target="_blank" tabindex="2">About</a>
-        </div>
-    </div>
+
+    </footer>
+
+
+    
 </body>
 </html>
