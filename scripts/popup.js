@@ -433,7 +433,7 @@ function selectIssueWithId(issueId) {
     $("#issue-status-div").append(statusLoaderDiv);
 
 
-    var newUrl = baseUrl + '/' + $('#project-names').val() + "/issues/" + issueId;
+    var newUrl = baseUrl + '/projects/' + $('#project-names').val() + "/issues/" + issueId;
 
     $("#issue_jira_url").attr('href', newUrl);
 
